@@ -1,4 +1,10 @@
 export interface IntroMediaConfig {
+  floatingSareeVideo: string;
+  floatingSareePoster: string;
+  womanWalkingCatchVideo: string;
+  womanWalkingCatchPoster: string;
+  sareeCatchWrapVideo: string;
+  sareeCatchWrapPoster: string;
   sareePullVideo: string;
   sareePullPoster: string;
   womanRotateVideo: string;
@@ -16,6 +22,12 @@ export interface IntroMediaConfig {
 }
 
 export const NOIR_INTRO_MEDIA: IntroMediaConfig = {
+  floatingSareeVideo: '/media/floating-saree.mp4',
+  floatingSareePoster: '/media/floating-saree-poster.jpg',
+  womanWalkingCatchVideo: '/media/woman-walking-catch.mp4',
+  womanWalkingCatchPoster: '/media/woman-walking-catch-poster.jpg',
+  sareeCatchWrapVideo: '/media/saree-catch-wrap.mp4',
+  sareeCatchWrapPoster: '/media/saree-catch-wrap-poster.jpg',
   sareePullVideo: '/media/entry-saree-pull.mp4',
   sareePullPoster: '/media/entry-saree-pull-poster.jpg',
   womanRotateVideo: '/media/entry-woman-rotate.mp4',

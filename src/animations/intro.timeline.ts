@@ -1,19 +1,19 @@
 import gsap from 'gsap';
 
+export type IntroPhase =
+  | 'darkness'
+  | 'fabricReveal'
+  | 'craftsmanship'
+  | 'wordmarkReveal'
+  | 'signatureReveal'
+  | 'homepageTransition'
+  | 'complete';
+
 export interface IntroTimelineCallbacks {
   onPhaseChange?: (phase: IntroPhase) => void;
   onRevealHomepage?: (instant?: boolean) => void;
   onComplete?: () => void;
 }
-
-export type IntroPhase =
-  | 'darkness'
-  | 'fabric'
-  | 'craftsmanship'
-  | 'wordmark'
-  | 'signature'
-  | 'transition'
-  | 'complete';
 
 export interface IntroTimelineOptions {
   isMobile: boolean;
@@ -22,14 +22,16 @@ export interface IntroTimelineOptions {
 }
 
 /**
- * Builds the single master GSAP timeline for Scene 01 of NOIR®.
- * Choreographs:
- * - darkness      (0.0s – 0.95s): Obsidian stillness, subtle film grain, warm center bloom
- * - fabric        (0.95s – 2.55s): Man pulling the flowing red-burgundy Banarasi silk saree
- * - craftsmanship (2.55s – 3.75s): Woman wearing the burgundy saree smoothly rotating into frame with warm gold light sweep
- * - wordmark      (3.75s – 4.45s): Centered NOIR® wordmark revealed through clipped letter masks
- * - signature     (4.35s – 5.45s): ATELIER OF MODERN INDIA + Tradition, Reimagined.
- * - transition    (5.45s – 7.15s): Sweeping burgundy silk veil dissolves directly into live Entry Hero film
+ * Single Master GSAP Timeline for NOIR® — Atelier of Modern India.
+ * Orchestrates one continuous 8.2-second luxury fashion campaign film across
+ * six explicit, tightly connected labels:
+ *
+ * - darkness           (0.0s – 1.0s): Obsidian stage, film grain, narrow center light & emerging burgundy silk (scale 1.08 -> 1.0)
+ * - fabricReveal       (1.0s – 2.5s): Dual-layer parallax burgundy silk motion with directional highlights & clip-path uncover
+ * - craftsmanship      (2.5s – 4.0s): Macro Indian antique-gold zardozi embroidery, slow camera pan & soft focus-to-sharp reveal
+ * - wordmarkReveal     (4.0s – 5.0s): Deep burgundy stage, backlit masked NOIR® letter reveal & subtle antique-gold sheen sweep
+ * - signatureReveal    (4.9s – 5.8s): Hairline rule, ATELIER OF MODERN INDIA, and Tradition, Reimagined.
+ * - homepageTransition (5.8s – 8.2s): Burgundy silk expanding from center as full-screen veil dissolving into live Entry Hero film
  */
 export function createIntroTimeline(
   container: HTMLElement,
@@ -48,188 +50,279 @@ export function createIntroTimeline(
     },
   });
 
-  // Initial compositor-safe states (no layout thrashing)
+  // -------------------------------------------------------------------------
+  // Initial compositor-only states (zero layout shift / reflow)
+  // -------------------------------------------------------------------------
   gsap.set(q('[data-intro="shell"]'), { opacity: 1 });
+  gsap.set(q('[data-intro="bg-stage"]'), { opacity: 0 });
   gsap.set(q('[data-intro="grain"]'), { opacity: 0 });
-  gsap.set(q('[data-intro="center-bloom"]'), { opacity: 0, scale: 0.3 });
-  gsap.set(q('[data-intro="center-core"]'), { opacity: 0, scale: 0.4 });
-  gsap.set(q('[data-intro="skip-btn"]'), { opacity: 0, y: -6 });
+  gsap.set(q('[data-intro="center-slit"]'), { opacity: 0, scaleY: 0.25, scaleX: 0.5 });
+  gsap.set(q('[data-intro="center-bloom"]'), { opacity: 0, scale: 0.35 });
+  gsap.set(q('[data-intro="controls"]'), { opacity: 0, y: -6 });
 
-  // Beat 02: Saree pull reveals right-to-left following the flow of the red-burgundy silk
-  gsap.set(q('[data-intro="fabric-layer"]'), {
+  // Scene 01 & 02: Floating burgundy silk + secondary parallax depth layer
+  gsap.set(q('[data-intro="fabric-primary"]'), {
     opacity: 0,
-    scale: isMobile ? 1.05 : 1.07,
-    xPercent: isMobile ? 0 : 2.5,
-    clipPath: isMobile ? 'inset(18% 0% 18% 0%)' : 'inset(0% 0% 0% 78%)',
+    scale: 1.08,
+    xPercent: 0,
+    yPercent: 1.4,
+    clipPath: isMobile ? 'inset(22% 8% 22% 8%)' : 'inset(24% 18% 24% 18%)',
   });
-  gsap.set(q('[data-intro="directional-light"]'), { opacity: 0 });
+  gsap.set(q('[data-intro="fabric-depth"]'), {
+    opacity: 0,
+    scale: 1.15,
+    xPercent: isMobile ? 0 : -4,
+    yPercent: isMobile ? 2 : 0,
+  });
+  gsap.set(q('[data-intro="directional-light"]'), { opacity: 0, xPercent: -10 });
 
-  // Beat 03: Woman wearing the burgundy saree gracefully rotating smoothly into frame
+  // Scene 03: Woman walking gracefully to catch the floating burgundy saree
   gsap.set(q('[data-intro="craft-layer"]'), {
     opacity: 0,
-    scale: isMobile ? 1.04 : 1.06,
-    xPercent: isMobile ? 0 : -2,
-    clipPath: isMobile ? 'inset(8% 0% 8% 0%)' : 'inset(0% 18% 0% 0%)',
+    scale: 1.09,
+    xPercent: isMobile ? 0 : -2.6,
+    clipPath: isMobile ? 'inset(14% 0% 14% 0%)' : 'inset(0% 100% 0% 0%)',
+    filter: isMobile ? 'none' : 'blur(6px)',
   });
   gsap.set(q('[data-intro="craft-light-sweep"]'), {
     xPercent: -120,
     opacity: 0,
   });
 
+  // Scene 04: Deep burgundy wordmark stage + backlit NOIR® & subtle gold reflection
+  gsap.set(q('[data-intro="burgundy-stage"]'), { opacity: 0 });
+  gsap.set(q('[data-intro="wordmark-backlight"]'), { opacity: 0, scale: 0.65 });
   gsap.set(q('[data-intro="wordmark-group"]'), { opacity: 1, y: 0 });
-  gsap.set(q('[data-intro="wordmark-char"]'), { yPercent: 115, opacity: 0 });
+  gsap.set(q('[data-intro="wordmark-char"]'), { yPercent: 112, opacity: 0 });
   gsap.set(q('[data-intro="wordmark-reg"]'), { opacity: 0, y: 6 });
+  gsap.set(q('[data-intro="wordmark-sheen"]'), {
+    opacity: 0,
+    backgroundPosition: '125% 0%',
+  });
   gsap.set(q('[data-intro="gold-rule"]'), { scaleX: 0, opacity: 0, transformOrigin: '50% 50%' });
   gsap.set(q('[data-intro="descriptor"]'), { yPercent: 110, opacity: 0 });
   gsap.set(q('[data-intro="tagline"]'), { yPercent: 110, opacity: 0 });
 
+  // Scene 05: Center-expanding burgundy silk full-screen mask
   gsap.set(q('[data-intro="transition-silk"]'), {
     opacity: 0,
-    scale: 1.08,
-    clipPath: 'inset(0% 100% 0% 0%)',
+    scale: 1.12,
+    clipPath: 'inset(46% 42% 46% 42%)',
   });
 
-  const targetGrainOpacity = isMobile ? 0.035 : isTablet ? 0.05 : 0.07;
+  const targetGrainOpacity = isMobile ? 0.032 : isTablet ? 0.05 : 0.072;
 
   // =========================================================================
-  // TIMELINE 01 — THE DARKNESS (0.0s – 0.95s)
+  // SCENE 01 — THE DARKNESS (0.0s – 1.0s)
   // =========================================================================
   tl.addLabel('darkness', 0);
   tl.call(() => callbacks?.onPhaseChange?.('darkness'), undefined, 'darkness');
 
   tl.to(
-    q('[data-intro="grain"]'),
+    q('[data-intro="bg-stage"]'),
     {
-      opacity: targetGrainOpacity,
-      duration: 0.7,
+      opacity: 1,
+      duration: 0.5,
       ease: 'power1.out',
     },
-    'darkness+=0.05'
+    'darkness'
   )
     .to(
-      q('[data-intro="center-bloom"]'),
+      q('[data-intro="grain"]'),
       {
-        opacity: 0.9,
-        scale: 1,
+        opacity: targetGrainOpacity,
+        duration: 0.75,
+        ease: 'power1.out',
+      },
+      'darkness+=0.06'
+    )
+    // Narrow warm center light aperture opens softly
+    .to(
+      q('[data-intro="center-slit"]'),
+      {
+        opacity: 0.88,
+        scaleY: 1,
+        scaleX: 1,
         duration: 0.85,
         ease: 'power2.out',
       },
       'darkness+=0.1'
     )
     .to(
-      q('[data-intro="center-core"]'),
+      q('[data-intro="center-bloom"]'),
       {
-        opacity: 0.85,
+        opacity: 0.72,
         scale: 1,
-        duration: 0.65,
+        duration: 0.9,
         ease: 'power2.out',
       },
       'darkness+=0.16'
     )
+    // Floating red-burgundy saree begins drifting into view from darkness (scale 1.08 -> 1.04)
     .to(
-      q('[data-intro="skip-btn"]'),
+      q('[data-intro="fabric-primary"]'),
+      {
+        opacity: 0.68,
+        scale: 1.04,
+        yPercent: 0.2,
+        clipPath: isMobile ? 'inset(10% 3% 10% 3%)' : 'inset(10% 8% 10% 8%)',
+        duration: 0.72,
+        ease: 'power2.out',
+      },
+      'darkness+=0.34'
+    )
+    .to(
+      q('[data-intro="controls"]'),
       {
         opacity: 1,
         y: 0,
-        duration: 0.5,
+        duration: 0.55,
         ease: 'power2.out',
       },
-      'darkness+=0.38'
+      'darkness+=0.42'
     );
 
   // =========================================================================
-  // TIMELINE 02 — THE SAREE PULL (0.95s – 2.55s)
-  // Man in obsidian tailoring pulls the flowing deep red-burgundy silk saree
+  // SCENE 02 — FLOATING BURGUNDY SAREE REVEAL (1.0s – 2.5s)
+  // Full cinematic floating saree + second silk parallax depth layer
   // =========================================================================
-  tl.addLabel('fabric', 0.95);
-  tl.call(() => callbacks?.onPhaseChange?.('fabric'), undefined, 'fabric');
+  tl.addLabel('fabricReveal', 1.0);
+  tl.call(() => callbacks?.onPhaseChange?.('fabricReveal'), undefined, 'fabricReveal');
 
   tl.to(
-    q('[data-intro="fabric-layer"]'),
+    q('[data-intro="fabric-primary"]'),
     {
-      opacity: 1,
+      opacity: 0.98,
       clipPath: 'inset(0% 0% 0% 0%)',
-      xPercent: 0,
-      scale: 1.01,
-      duration: 1.5,
-      ease: 'power3.inOut',
+      scale: 1.0,
+      xPercent: isMobile ? 0 : 1.8,
+      yPercent: -1.1,
+      duration: 1.45,
+      ease: 'power2.inOut',
     },
-    'fabric'
+    'fabricReveal'
   )
+    .to(
+      q('[data-intro="center-slit"]'),
+      {
+        opacity: 0,
+        scaleX: 1.8,
+        duration: 0.75,
+        ease: 'power2.inOut',
+      },
+      'fabricReveal+=0.08'
+    )
     .to(
       q('[data-intro="directional-light"]'),
       {
-        opacity: 0.75,
-        duration: 1.15,
-        ease: 'power2.out',
+        opacity: 0.85,
+        xPercent: 8,
+        duration: 1.4,
+        ease: 'sine.inOut',
       },
-      'fabric+=0.2'
-    )
-    .to(
-      q('[data-intro="center-core"]'),
-      {
-        opacity: 0,
-        scale: 1.6,
-        duration: 0.55,
-        ease: 'power2.inOut',
-      },
-      'fabric+=0.12'
-    )
-    .to(
-      q('[data-intro="center-bloom"]'),
-      {
-        opacity: 0.22,
-        scale: 1.25,
-        duration: 0.95,
-        ease: 'power2.out',
-      },
-      'fabric+=0.2'
+      'fabricReveal+=0.1'
     );
 
+  // Second silk depth layer at distinct speed for desktop & tablet
+  if (!isMobile) {
+    tl.to(
+      q('[data-intro="fabric-depth"]'),
+      {
+        opacity: isTablet ? 0.24 : 0.34,
+        scale: 1.04,
+        xPercent: 3.2,
+        duration: 1.55,
+        ease: 'sine.inOut',
+      },
+      'fabricReveal+=0.12'
+    );
+  }
+
   // =========================================================================
-  // TIMELINE 03 — GRACEFUL ROTATION & ZARI SHEEN (2.55s – 3.75s)
-  // Woman wearing the burgundy saree smoothly turns into the illuminated arch
+  // SCENE 03 — THE CRAFTSMANSHIP (2.5s – 4.0s)
+  // Clip-path unveil into macro Indian gold zardozi, slow pan, soft focus-to-sharp
   // =========================================================================
-  tl.addLabel('craftsmanship', 2.55);
+  tl.addLabel('craftsmanship', 2.5);
   tl.call(() => callbacks?.onPhaseChange?.('craftsmanship'), undefined, 'craftsmanship');
 
   tl.to(
     q('[data-intro="craft-layer"]'),
     {
-      opacity: 1,
+      opacity: 0.96,
       clipPath: 'inset(0% 0% 0% 0%)',
-      xPercent: 0,
-      scale: 1.0,
-      duration: 0.95,
-      ease: 'power2.inOut',
+      duration: 0.88,
+      ease: 'power3.inOut',
     },
     'craftsmanship'
   )
-    .to(
-      q('[data-intro="craft-light-sweep"]'),
-      {
-        xPercent: 120,
-        opacity: isMobile ? 0.45 : 0.65,
-        duration: 1.1,
-        ease: 'power1.inOut',
-      },
-      'craftsmanship+=0.1'
-    )
-    .to(
-      q('[data-intro="fabric-layer"]'),
-      {
-        opacity: 0,
-        duration: 0.85,
-        ease: 'power2.inOut',
-      },
-      'craftsmanship+=0.18'
-    )
-    // Softly lower luminance of the rotating saree frame so NOIR® wordmark commands center
+    // Slow continuous camera glide across fine gold threads
     .to(
       q('[data-intro="craft-layer"]'),
       {
-        opacity: 0.48,
-        scale: 1.03,
+        xPercent: isMobile ? 0 : 2.2,
+        scale: 1.02,
+        duration: 1.55,
+        ease: 'sine.inOut',
+      },
+      'craftsmanship'
+    );
+
+  // Soft optical focus-to-sharp rack transition on desktop/tablet
+  if (!isMobile) {
+    tl.to(
+      q('[data-intro="craft-layer"]'),
+      {
+        filter: 'blur(0px)',
+        duration: 0.85,
+        ease: 'power2.out',
+      },
+      'craftsmanship+=0.18'
+    );
+  }
+
+  tl.to(
+    q('[data-intro="craft-light-sweep"]'),
+    {
+      xPercent: 120,
+      opacity: isMobile ? 0.42 : 0.68,
+      duration: 1.25,
+      ease: 'power1.inOut',
+    },
+    'craftsmanship+=0.15'
+  )
+    // Quietly dim background silk layers beneath craftsmanship
+    .to(
+      q('[data-intro="fabric-depth"]'),
+      {
+        opacity: 0,
+        duration: 0.65,
+        ease: 'power2.inOut',
+      },
+      'craftsmanship+=0.2'
+    )
+    // Smoothly melt craftsmanship into the deep dark burgundy environment for Scene 04
+    .to(
+      q('[data-intro="burgundy-stage"]'),
+      {
+        opacity: 1,
+        duration: 0.72,
+        ease: 'power2.inOut',
+      },
+      'craftsmanship+=1.02'
+    )
+    .to(
+      q('[data-intro="craft-layer"]'),
+      {
+        opacity: 0,
+        duration: 0.68,
+        ease: 'power2.inOut',
+      },
+      'craftsmanship+=1.05'
+    )
+    .to(
+      q('[data-intro="fabric-primary"]'),
+      {
+        opacity: 0.28,
         duration: 0.65,
         ease: 'power2.inOut',
       },
@@ -237,137 +330,171 @@ export function createIntroTimeline(
     );
 
   // =========================================================================
-  // TIMELINE 04 — THE NOIR® WORDMARK & SIGNATURE (3.75s – 5.45s)
+  // SCENE 04 — THE NOIR WORDMARK & SIGNATURE (4.0s – 5.8s)
+  // Deep burgundy stage, backlit masked letters, subtle antique-gold sheen
   // =========================================================================
-  tl.addLabel('wordmark', 3.75);
-  tl.call(() => callbacks?.onPhaseChange?.('wordmark'), undefined, 'wordmark');
+  tl.addLabel('wordmarkReveal', 4.0);
+  tl.call(() => callbacks?.onPhaseChange?.('wordmarkReveal'), undefined, 'wordmarkReveal');
 
   tl.to(
-    q('[data-intro="center-bloom"]'),
+    q('[data-intro="wordmark-backlight"]'),
     {
-      opacity: 0.36,
-      scale: 1.08,
-      duration: 0.8,
+      opacity: 0.92,
+      scale: 1.04,
+      duration: 0.95,
       ease: 'power2.out',
     },
-    'wordmark'
+    'wordmarkReveal'
   )
     .to(
       q('[data-intro="wordmark-char"]'),
       {
         yPercent: 0,
         opacity: 1,
-        duration: 0.78,
-        stagger: 0.068,
+        duration: 0.82,
+        stagger: 0.075,
         ease: 'power3.out',
       },
-      'wordmark+=0.05'
+      'wordmarkReveal+=0.08'
     )
     .to(
       q('[data-intro="wordmark-reg"]'),
       {
-        opacity: 0.82,
+        opacity: 0.85,
         y: 0,
         duration: 0.5,
         ease: 'power2.out',
       },
-      'wordmark+=0.45'
+      'wordmarkReveal+=0.5'
+    )
+    // Subtle antique-gold reflection sweep passing across NOIR® lettering once
+    .to(
+      q('[data-intro="wordmark-sheen"]'),
+      {
+        opacity: 0.82,
+        duration: 0.22,
+        ease: 'power1.out',
+      },
+      'wordmarkReveal+=0.58'
     )
     .to(
-      q('[data-intro="gold-rule"]'),
+      q('[data-intro="wordmark-sheen"]'),
       {
-        scaleX: 1,
-        opacity: 0.7,
-        duration: 0.62,
-        ease: 'power2.out',
+        backgroundPosition: '-30% 0%',
+        duration: 1.05,
+        ease: 'power2.inOut',
       },
-      'wordmark+=0.38'
+      'wordmarkReveal+=0.58'
+    )
+    .to(
+      q('[data-intro="wordmark-sheen"]'),
+      {
+        opacity: 0,
+        duration: 0.35,
+        ease: 'power1.out',
+      },
+      'wordmarkReveal+=1.32'
     );
 
-  tl.addLabel('signature', 4.35);
-  tl.call(() => callbacks?.onPhaseChange?.('signature'), undefined, 'signature');
+  // Brand Signature (Descriptor + Tagline)
+  tl.addLabel('signatureReveal', 4.88);
+  tl.call(() => callbacks?.onPhaseChange?.('signatureReveal'), undefined, 'signatureReveal');
 
   tl.to(
-    q('[data-intro="descriptor"]'),
+    q('[data-intro="gold-rule"]'),
     {
-      yPercent: 0,
-      opacity: 1,
-      duration: 0.56,
-      ease: 'power3.out',
+      scaleX: 1,
+      opacity: 0.72,
+      duration: 0.58,
+      ease: 'power2.out',
     },
-    'signature'
-  ).to(
-    q('[data-intro="tagline"]'),
-    {
-      yPercent: 0,
-      opacity: 1,
-      duration: 0.6,
-      ease: 'power3.out',
-    },
-    'signature+=0.24'
-  );
+    'signatureReveal'
+  )
+    .to(
+      q('[data-intro="descriptor"]'),
+      {
+        yPercent: 0,
+        opacity: 1,
+        duration: 0.58,
+        ease: 'power3.out',
+      },
+      'signatureReveal+=0.14'
+    )
+    .to(
+      q('[data-intro="tagline"]'),
+      {
+        yPercent: 0,
+        opacity: 1,
+        duration: 0.62,
+        ease: 'power3.out',
+      },
+      'signatureReveal+=0.38'
+    );
 
   // =========================================================================
-  // TIMELINE 05 — SEAMLESS TRANSITION INTO ENTRY HERO FILM (5.45s – 7.15s)
+  // SCENE 05 — THE FINAL CINEMATIC TRANSITION (5.95s – 8.2s)
+  // Burgundy silk expands from center as full-screen mask -> live Entry Hero
   // =========================================================================
-  tl.addLabel('transition', 5.45);
-  tl.call(() => callbacks?.onPhaseChange?.('transition'), undefined, 'transition');
+  tl.addLabel('homepageTransition', 5.95);
+  tl.call(() => callbacks?.onPhaseChange?.('homepageTransition'), undefined, 'homepageTransition');
 
   tl.to(
-    q('[data-intro="skip-btn"]'),
+    q('[data-intro="controls"]'),
     {
       opacity: 0,
-      duration: 0.28,
+      duration: 0.32,
       ease: 'power2.in',
     },
-    'transition'
+    'homepageTransition'
   )
     .to(
       q('[data-intro="wordmark-group"]'),
       {
         opacity: 0,
         y: -10,
-        duration: 0.48,
+        duration: 0.58,
         ease: 'power2.inOut',
       },
-      'transition+=0.05'
+      'homepageTransition+=0.08'
     )
-    // Flowing deep burgundy Banarasi silk glides across the frame from left to right
+    // Burgundy silk expands organically outward from center to cover full viewport
     .to(
       q('[data-intro="transition-silk"]'),
       {
-        opacity: 0.94,
+        opacity: 0.98,
         clipPath: 'inset(0% 0% 0% 0%)',
         scale: 1.0,
-        duration: 0.72,
+        duration: 0.92,
         ease: 'power3.inOut',
       },
-      'transition+=0.06'
+      'homepageTransition+=0.1'
     )
-    // Reveal the pre-mounted live Entry Hero right as the silk curtain opens
+    // Trigger homepage navigation & hero typography reveal right as silk opens into live film
     .call(
       () => {
         callbacks?.onRevealHomepage?.(false);
       },
       undefined,
-      'transition+=0.72'
+      'homepageTransition+=0.98'
     )
+    // Seamless dissolve of the entire intro shell into the live, pre-mounted Entry Hero film
     .to(
       q('[data-intro="shell"]'),
       {
         opacity: 0,
-        duration: 0.92,
+        duration: 1.22,
         ease: 'power2.inOut',
       },
-      'transition+=0.76'
+      'homepageTransition+=1.02'
     );
 
   return tl;
 }
 
 /**
- * Reduced-motion timeline: honors prefers-reduced-motion by showing a serene
- * static brand reveal before dissolving cleanly into the entry page.
+ * Accessible reduced-motion timeline: honors prefers-reduced-motion by bypassing
+ * multi-scene camera movement and presenting a serene, brief brand lockup reveal
+ * before transitioning cleanly to the homepage.
  */
 export function createReducedMotionIntroTimeline(
   container: HTMLElement,
@@ -376,17 +503,26 @@ export function createReducedMotionIntroTimeline(
   const q = gsap.utils.selector(container);
 
   gsap.set(q('[data-intro="shell"]'), { opacity: 1 });
-  gsap.set(q('[data-intro="fabric-layer"]'), { opacity: 0, clipPath: 'inset(0% 0% 0% 0%)', scale: 1 });
-  gsap.set(q('[data-intro="craft-layer"]'), { opacity: 0.35, clipPath: 'inset(0% 0% 0% 0%)', scale: 1 });
+  gsap.set(q('[data-intro="bg-stage"]'), { opacity: 1 });
+  gsap.set(q('[data-intro="burgundy-stage"]'), { opacity: 1 });
+  gsap.set(q('[data-intro="fabric-primary"]'), {
+    opacity: 0.24,
+    clipPath: 'inset(0% 0% 0% 0%)',
+    scale: 1,
+  });
+  gsap.set(q('[data-intro="fabric-depth"]'), { opacity: 0 });
+  gsap.set(q('[data-intro="craft-layer"]'), { opacity: 0, filter: 'none' });
   gsap.set(q('[data-intro="transition-silk"]'), { opacity: 0 });
   gsap.set(q('[data-intro="grain"]'), { opacity: 0 });
-  gsap.set(q('[data-intro="center-bloom"]'), { opacity: 0.32, scale: 1 });
-  gsap.set(q('[data-intro="center-core"]'), { opacity: 0 });
-  gsap.set(q('[data-intro="skip-btn"]'), { opacity: 1, y: 0 });
+  gsap.set(q('[data-intro="center-slit"]'), { opacity: 0 });
+  gsap.set(q('[data-intro="center-bloom"]'), { opacity: 0 });
+  gsap.set(q('[data-intro="wordmark-backlight"]'), { opacity: 0.72, scale: 1 });
+  gsap.set(q('[data-intro="controls"]'), { opacity: 1, y: 0 });
   gsap.set(q('[data-intro="wordmark-group"]'), { opacity: 0, y: 0 });
   gsap.set(q('[data-intro="wordmark-char"]'), { yPercent: 0, opacity: 1 });
-  gsap.set(q('[data-intro="wordmark-reg"]'), { opacity: 0.8, y: 0 });
-  gsap.set(q('[data-intro="gold-rule"]'), { scaleX: 1, opacity: 0.7 });
+  gsap.set(q('[data-intro="wordmark-reg"]'), { opacity: 0.85, y: 0 });
+  gsap.set(q('[data-intro="wordmark-sheen"]'), { opacity: 0 });
+  gsap.set(q('[data-intro="gold-rule"]'), { scaleX: 1, opacity: 0.72 });
   gsap.set(q('[data-intro="descriptor"]'), { yPercent: 0, opacity: 1 });
   gsap.set(q('[data-intro="tagline"]'), { yPercent: 0, opacity: 1 });
 
@@ -398,14 +534,22 @@ export function createReducedMotionIntroTimeline(
   });
 
   tl.addLabel('darkness', 0)
-    .addLabel('fabric', 0.05)
+    .addLabel('fabricReveal', 0.05)
     .addLabel('craftsmanship', 0.1)
-    .addLabel('wordmark', 0.12)
-    .to(q('[data-intro="wordmark-group"]'), { opacity: 1, duration: 0.35, ease: 'power1.out' }, 'wordmark')
-    .addLabel('signature', 0.45)
-    .addLabel('transition', 1.15)
-    .call(() => callbacks?.onRevealHomepage?.(true), undefined, 'transition')
-    .to(q('[data-intro="shell"]'), { opacity: 0, duration: 0.4, ease: 'power1.out' }, 'transition+=0.05');
+    .addLabel('wordmarkReveal', 0.12)
+    .to(
+      q('[data-intro="wordmark-group"]'),
+      { opacity: 1, duration: 0.38, ease: 'power1.out' },
+      'wordmarkReveal'
+    )
+    .addLabel('signatureReveal', 0.48)
+    .addLabel('homepageTransition', 1.25)
+    .call(() => callbacks?.onRevealHomepage?.(true), undefined, 'homepageTransition')
+    .to(
+      q('[data-intro="shell"]'),
+      { opacity: 0, duration: 0.42, ease: 'power1.out' },
+      'homepageTransition+=0.05'
+    );
 
   return tl;
 }

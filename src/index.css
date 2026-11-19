@@ -49,23 +49,62 @@
   pointer-events: none;
 }
 
-/* Subtle warm optical bloom strictly for Timeline 01 center light */
-.noir-center-bloom {
+/* Narrow warm center aperture glow for Scene 01 */
+.noir-center-slit {
   background: radial-gradient(
-    circle at 50% 50%,
+    ellipse 24% 68% at 50% 50%,
     rgba(237, 228, 216, 0.42) 0%,
-    rgba(182, 154, 106, 0.24) 18%,
-    rgba(100, 31, 43, 0.14) 44%,
-    rgba(21, 17, 18, 0) 72%
+    rgba(182, 154, 106, 0.24) 26%,
+    rgba(100, 31, 43, 0.14) 54%,
+    rgba(21, 17, 18, 0) 78%
   );
   pointer-events: none;
 }
 
+.noir-center-bloom {
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(237, 228, 216, 0.34) 0%,
+    rgba(182, 154, 106, 0.2) 22%,
+    rgba(100, 31, 43, 0.16) 48%,
+    rgba(21, 17, 18, 0) 74%
+  );
+  pointer-events: none;
+}
+
+/* Subtle backlit halo strictly behind the NOIR® wordmark in Scene 04 */
+.noir-wordmark-backlight {
+  background: radial-gradient(
+    ellipse 58% 36% at 50% 50%,
+    rgba(182, 154, 106, 0.22) 0%,
+    rgba(100, 31, 43, 0.26) 44%,
+    rgba(21, 17, 18, 0) 76%
+  );
+  pointer-events: none;
+}
+
+/* Masked antique-gold specular sheen sweeping gracefully across NOIR® lettering */
+.noir-gold-sheen-text {
+  background-image: linear-gradient(
+    112deg,
+    rgba(237, 228, 216, 0) 32%,
+    rgba(182, 154, 106, 0.55) 47%,
+    rgba(255, 246, 228, 0.92) 50%,
+    rgba(182, 154, 106, 0.45) 54%,
+    rgba(237, 228, 216, 0) 68%
+  );
+  background-size: 260% 100%;
+  background-position: 120% 0%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .noir-directional-light {
   background: radial-gradient(
-    ellipse 72% 58% at 24% 28%,
-    rgba(182, 154, 106, 0.22) 0%,
-    rgba(100, 31, 43, 0.14) 42%,
+    ellipse 74% 60% at 24% 26%,
+    rgba(182, 154, 106, 0.24) 0%,
+    rgba(100, 31, 43, 0.16) 44%,
     rgba(21, 17, 18, 0.58) 100%
   );
   pointer-events: none;
@@ -73,10 +112,10 @@
 
 .noir-vignette {
   background: radial-gradient(
-    ellipse 80% 75% at 50% 50%,
-    rgba(21, 17, 18, 0) 32%,
-    rgba(21, 17, 18, 0.52) 74%,
-    rgba(21, 17, 18, 0.92) 100%
+    ellipse 82% 76% at 50% 50%,
+    rgba(21, 17, 18, 0) 30%,
+    rgba(21, 17, 18, 0.54) 74%,
+    rgba(21, 17, 18, 0.94) 100%
   );
   pointer-events: none;
 }

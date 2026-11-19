@@ -10,10 +10,12 @@ export interface HomeHeroProps {
 }
 
 const FILM_CHAPTERS = [
-  { id: 'pull', label: '01 · The Pull', seekSec: 2.8 },
-  { id: 'turn', label: '02 · The Turn', seekSec: 5.4 },
-  { id: 'arrival', label: '03 · The Arrival', seekSec: 0.2 },
+  { id: 'floating', label: '01 · Floating Silk', seekSec: 3.1 },
+  { id: 'reach', label: '02 · The Reach', seekSec: 5.7 },
+  { id: 'embrace', label: '03 · The Embrace', seekSec: 0.2 },
 ] as const;
+
+type HeroChapterId = (typeof FILM_CHAPTERS)[number]['id'];
 
 export function HomeHero({
   isRevealed,
@@ -23,7 +25,7 @@ export function HomeHero({
 }: HomeHeroProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [videoFailed, setVideoFailed] = useState(false);
-  const [activeChapter, setActiveChapter] = useState<'pull' | 'turn' | 'arrival'>('arrival');
+  const [activeChapter, setActiveChapter] = useState<HeroChapterId>('embrace');
 
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -74,17 +76,17 @@ export function HomeHero({
     const vid = videoRef.current;
     if (!vid || isMobile) return;
     const t = vid.currentTime;
-    if (t >= 2.6 && t < 5.1) {
-      setActiveChapter('pull');
-    } else if (t >= 5.1 && t < 7.6) {
-      setActiveChapter('turn');
+    if (t >= 2.8 && t < 5.3) {
+      setActiveChapter('floating');
+    } else if (t >= 5.3 && t < 7.9) {
+      setActiveChapter('reach');
     } else {
-      setActiveChapter('arrival');
+      setActiveChapter('embrace');
     }
   }, [isMobile]);
 
   const handleSelectChapter = useCallback(
-    (chapterId: 'pull' | 'turn' | 'arrival', seekSec: number) => {
+    (chapterId: HeroChapterId, seekSec: number) => {
       setActiveChapter(chapterId);
       const vid = videoRef.current;
       if (vid && !isMobile && !videoFailed) {
@@ -180,8 +182,8 @@ export function HomeHero({
               isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
             }`}
           >
-            Six yards of handwoven deep burgundy Banarasi silk in motion, tailored alongside
-            architectural obsidian menswear for contemporary Indian couture.
+            Six weightless yards of deep burgundy Banarasi silk drifting through twilight—caught
+            in a single fluid embrace of handwoven zari and contemporary Indian couture.
           </p>
 
           <div

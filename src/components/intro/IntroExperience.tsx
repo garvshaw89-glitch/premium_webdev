@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
+import { Volume2, VolumeX } from 'lucide-react';
 import {
   createIntroTimeline,
   createReducedMotionIntroTimeline,
+  type IntroPhase,
 } from '../../animations/intro.timeline';
+import { NoirAmbientAudio } from '../../audio/noirAmbientAudio';
 import { NOIR_INTRO_MEDIA, type IntroMediaConfig } from '../../data/noirMedia';
 
-export const NOIR_INTRO_SESSION_KEY = 'noir_intro_completed_v2';
+export const NOIR_INTRO_SESSION_KEY = 'noir_intro_completed_v4';
 
 export function hasCompletedNoirIntro(): boolean {
   if (typeof window === 'undefined') return false;
@@ -40,7 +43,7 @@ export interface IntroExperienceProps {
   media?: Partial<IntroMediaConfig>;
   /** Force playback even if sessionStorage already recorded completion (e.g. Replay Film) */
   forcePlay?: boolean;
-  /** Fired right as Timeline 05 opens into the homepage so Hero typography can choreograph smoothly */
+  /** Fired right as Scene 05 opens into the homepage so Navigation & Hero reveal cleanly */
   onRevealHomepage?: (instant?: boolean) => void;
   /** Fired once the intro overlay has completely finished and can be unmounted */
   onComplete: () => void;
@@ -54,7 +57,7 @@ function attemptVideoPlay(video: HTMLVideoElement | null): void {
   const playPromise = video.play();
   if (playPromise && typeof playPromise.catch === 'function') {
     playPromise.catch(() => {
-      // Autoplay blocked by browser policy; poster image fallback remains seamlessly visible
+      // Autoplay blocked by browser policy; exact-match poster fallback remains visible
     });
   }
 }
@@ -72,9 +75,12 @@ export function IntroExperience({
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
-  const pullVideoRef = useRef<HTMLVideoElement | null>(null);
-  const rotateVideoRef = useRef<HTMLVideoElement | null>(null);
-  const transitionVideoRef = useRef<HTMLVideoElement | null>(null);
+  const audioRef = useRef<NoirAmbientAudio | null>(null);
+
+  const primarySilkRef = useRef<HTMLVideoElement | null>(null);
+  const depthSilkRef = useRef<HTMLVideoElement | null>(null);
+  const craftVideoRef = useRef<HTMLVideoElement | null>(null);
+  const transitionSilkRef = useRef<HTMLVideoElement | null>(null);
 
   const hasFinishedRef = useRef(false);
   const onRevealRef = useRef(onRevealHomepage);
@@ -95,42 +101,57 @@ export function IntroExperience({
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
 
-  const [pullVideoFailed, setPullVideoFailed] = useState(false);
-  const [rotateVideoFailed, setRotateVideoFailed] = useState(false);
-  const [transitionVideoFailed, setTransitionVideoFailed] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+
+  const [primarySilkFailed, setPrimarySilkFailed] = useState(false);
+  const [depthSilkFailed, setDepthSilkFailed] = useState(false);
+  const [craftVideoFailed, setCraftVideoFailed] = useState(false);
+  const [transitionSilkFailed, setTransitionSilkFailed] = useState(false);
 
   const isMobile = viewportMode === 'mobile';
   const isTablet = viewportMode === 'tablet';
 
-  // Dedicated mobile vertical crops vs. desktop widescreen cinema frames
-  const activePullVideo = isMobile
+  // Scene 01 & 02: Floating red-burgundy Banarasi silk saree suspended in twilight
+  const openingSilkVideo = isMobile
     ? resolvedMedia.silkPortraitVideo
-    : resolvedMedia.sareePullVideo;
-  const activePullPoster = isMobile
+    : resolvedMedia.floatingSareeVideo;
+  const openingSilkPoster = isMobile
     ? resolvedMedia.silkPortraitPoster
-    : resolvedMedia.sareePullPoster;
+    : resolvedMedia.floatingSareePoster;
 
-  const activeRotateVideo = isMobile
+  // Scene 03: Woman walking gracefully toward the floating burgundy saree to catch it
+  const catchSceneVideo = isMobile
     ? resolvedMedia.heroMobileVideo
-    : resolvedMedia.womanRotateVideo;
-  const activeRotatePoster = isMobile
+    : resolvedMedia.womanWalkingCatchVideo;
+  const catchScenePoster = isMobile
     ? resolvedMedia.heroMobilePoster
-    : resolvedMedia.womanRotatePoster;
+    : resolvedMedia.womanWalkingCatchPoster;
 
-  const activeTransitionVideo = isMobile
+  // Scene 05: Flowing burgundy silk wrap expanding from center directly into the Entry Hero
+  const transitionVeilVideo = isMobile
     ? resolvedMedia.silkPortraitVideo
-    : resolvedMedia.silkLandscapeVideo;
-  const activeTransitionPoster = isMobile
+    : resolvedMedia.sareeCatchWrapVideo;
+  const transitionVeilPoster = isMobile
     ? resolvedMedia.silkPortraitPoster
-    : resolvedMedia.silkLandscapePoster;
+    : resolvedMedia.sareeCatchWrapPoster;
 
   const finalizeIntro = useCallback(() => {
     if (hasFinishedRef.current) return;
     hasFinishedRef.current = true;
     markNoirIntroCompleted();
+    audioRef.current?.fadeOutAndDispose(0.85);
+    audioRef.current = null;
     document.documentElement.classList.remove('noir-intro-lock');
     document.body.classList.remove('noir-intro-lock');
     onCompleteRef.current();
+  }, []);
+
+  const handleToggleSound = useCallback(() => {
+    if (!audioRef.current) {
+      audioRef.current = new NoirAmbientAudio();
+    }
+    const nextState = audioRef.current.toggle();
+    setSoundEnabled(nextState);
   }, []);
 
   const handleSkip = useCallback(() => {
@@ -141,6 +162,9 @@ export function IntroExperience({
       timelineRef.current = null;
     }
 
+    audioRef.current?.fadeOutAndDispose(0.35);
+    audioRef.current = null;
+
     // Immediately settle homepage into complete, non-partial final state
     markNoirIntroCompleted();
     onRevealRef.current?.(true);
@@ -149,7 +173,7 @@ export function IntroExperience({
     if (shell && !prefersReducedMotion) {
       gsap.to(shell, {
         opacity: 0,
-        duration: 0.28,
+        duration: 0.34,
         ease: 'power2.out',
         onComplete: finalizeIntro,
       });
@@ -192,10 +216,12 @@ export function IntroExperience({
       window.removeEventListener('keydown', handleKeyDown);
       document.documentElement.classList.remove('noir-intro-lock');
       document.body.classList.remove('noir-intro-lock');
+      audioRef.current?.fadeOutAndDispose(0.25);
+      audioRef.current = null;
     };
   }, [handleSkip]);
 
-  // Master GSAP timeline lifecycle inside scoped gsap.context (Strict Mode safe)
+  // Scoped GSAP context master timeline (React Strict Mode safe, zero duplicate timelines)
   useEffect(() => {
     if (!forcePlay && hasCompletedNoirIntro()) {
       onRevealRef.current?.(true);
@@ -208,22 +234,42 @@ export function IntroExperience({
 
     hasFinishedRef.current = false;
 
+    // Preload & play ONLY the critical opening burgundy silk video immediately
     if (!prefersReducedMotion) {
-      attemptVideoPlay(pullVideoRef.current);
-      attemptVideoPlay(transitionVideoRef.current);
+      attemptVideoPlay(primarySilkRef.current);
     }
 
     const ctx = gsap.context(() => {
       const callbacks = {
-        onPhaseChange: (phase: string) => {
-          if (phase === 'craftsmanship' && !prefersReducedMotion) {
-            if (rotateVideoRef.current) {
-              rotateVideoRef.current.currentTime = 0;
+        onPhaseChange: (phase: IntroPhase) => {
+          if (prefersReducedMotion) return;
+
+          if (phase === 'fabricReveal') {
+            attemptVideoPlay(depthSilkRef.current);
+            // Lazy-prepare macro craftsmanship clip right before Scene 03
+            if (craftVideoRef.current && craftVideoRef.current.readyState === 0) {
+              craftVideoRef.current.preload = 'auto';
+              craftVideoRef.current.load();
             }
-            attemptVideoPlay(rotateVideoRef.current);
+            audioRef.current?.pulseFabric(1.5, 0.036);
           }
-          if (phase === 'transition' && !prefersReducedMotion) {
-            attemptVideoPlay(transitionVideoRef.current);
+
+          if (phase === 'craftsmanship') {
+            attemptVideoPlay(craftVideoRef.current);
+            // Lazy-prepare transition silk clip right before Scene 05
+            if (transitionSilkRef.current && transitionSilkRef.current.readyState === 0) {
+              transitionSilkRef.current.preload = 'auto';
+              transitionSilkRef.current.load();
+            }
+          }
+
+          if (phase === 'wordmarkReveal') {
+            audioRef.current?.playTransitionSwell();
+          }
+
+          if (phase === 'homepageTransition') {
+            attemptVideoPlay(transitionSilkRef.current);
+            audioRef.current?.pulseFabric(1.6, 0.045);
           }
         },
         onRevealHomepage: (instant?: boolean) => {
@@ -253,40 +299,46 @@ export function IntroExperience({
     <div
       ref={containerRef}
       role="region"
-      aria-label="NOIR brand introduction"
+      aria-label="NOIR cinematic brand introduction"
       className="fixed inset-0 z-50 h-[100svh] w-[100vw] overflow-hidden select-none"
     >
       <div
         data-intro="shell"
         className="relative h-full w-full overflow-hidden bg-[#151112]"
       >
+        {/* Obsidian Base Stage */}
+        <div
+          data-intro="bg-stage"
+          aria-hidden="true"
+          className="absolute inset-0 bg-[#151112]"
+        />
+
         {/* ===============================================================
-            LAYER 01: THE SAREE PULL (Timeline 02)
-            Man in obsidian tailoring pulling the flowing red-burgundy saree
+            SCENE 01 & 02: LAYERED BURGUNDY SILK (Primary + Parallax Depth)
            =============================================================== */}
         <div
-          data-intro="fabric-layer"
+          data-intro="fabric-primary"
           className="absolute inset-0 h-full w-full will-change-transform"
         >
-          {!pullVideoFailed && !prefersReducedMotion ? (
+          {!primarySilkFailed && !prefersReducedMotion ? (
             <video
-              ref={pullVideoRef}
-              key={activePullVideo}
-              src={activePullVideo}
-              poster={activePullPoster}
+              ref={primarySilkRef}
+              key={openingSilkVideo}
+              src={openingSilkVideo}
+              poster={openingSilkPoster}
               autoPlay
               muted
               loop
               playsInline
               preload="auto"
               aria-hidden="true"
-              onError={() => setPullVideoFailed(true)}
+              onError={() => setPrimarySilkFailed(true)}
               className="h-full w-full object-cover object-center"
             />
           ) : (
             <img
-              src={activePullPoster}
-              alt="Man in obsidian couture pulling a flowing red-burgundy Banarasi silk saree"
+              src={openingSilkPoster}
+              alt="Deep burgundy Banarasi silk emerging from obsidian darkness"
               referrerPolicy="no-referrer"
               className="h-full w-full object-cover object-center"
             />
@@ -295,37 +347,68 @@ export function IntroExperience({
           <div
             data-intro="directional-light"
             aria-hidden="true"
-            className="noir-directional-light absolute inset-0"
+            className="noir-directional-light absolute inset-0 will-change-transform"
           />
           <div aria-hidden="true" className="noir-vignette absolute inset-0" />
         </div>
 
+        {/* Second Parallax Silk Depth Layer (Desktop & Tablet only to keep mobile lean) */}
+        {!isMobile && (
+          <div
+            data-intro="fabric-depth"
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 h-full w-full mix-blend-screen will-change-transform"
+          >
+            {!depthSilkFailed && !prefersReducedMotion ? (
+              <video
+                ref={depthSilkRef}
+                src={resolvedMedia.silkLandscapeVideo}
+                poster={resolvedMedia.silkLandscapePoster}
+                muted
+                loop
+                playsInline
+                preload="none"
+                onError={() => setDepthSilkFailed(true)}
+                className="h-full w-full scale-x-[-1] object-cover object-center opacity-75"
+              />
+            ) : (
+              <img
+                src={resolvedMedia.silkLandscapePoster}
+                alt=""
+                referrerPolicy="no-referrer"
+                className="h-full w-full scale-x-[-1] object-cover object-center opacity-75"
+              />
+            )}
+            <div className="noir-vignette absolute inset-0" />
+          </div>
+        )}
+
         {/* ===============================================================
-            LAYER 02: WOMAN SMOOTHLY ROTATING IN THE BURGUNDY SAREE (Timeline 03)
-            Fluid slow-motion rotation with antique gold light sweeping across silk
+            SCENE 03: WOMAN WALKING TOWARD THE FLOATING SAREE TO CATCH IT
+            Slow tracking glide + soft focus-to-sharp + antique gold light sweep
            =============================================================== */}
         <div
           data-intro="craft-layer"
           className="absolute inset-0 h-full w-full will-change-transform"
         >
-          {!rotateVideoFailed && !prefersReducedMotion ? (
+          {!craftVideoFailed && !prefersReducedMotion ? (
             <video
-              ref={rotateVideoRef}
-              key={activeRotateVideo}
-              src={activeRotateVideo}
-              poster={activeRotatePoster}
+              ref={craftVideoRef}
+              key={catchSceneVideo}
+              src={catchSceneVideo}
+              poster={catchScenePoster}
               muted
               loop
               playsInline
-              preload="auto"
+              preload="none"
               aria-hidden="true"
-              onError={() => setRotateVideoFailed(true)}
+              onError={() => setCraftVideoFailed(true)}
               className="h-full w-full object-cover object-center"
             />
           ) : (
             <img
-              src={activeRotatePoster}
-              alt="Woman wearing a flowing red-burgundy Banarasi silk saree rotating smoothly"
+              src={catchScenePoster}
+              alt="Woman walking gracefully to catch the floating red-burgundy Banarasi silk saree"
               referrerPolicy="no-referrer"
               className="h-full w-full object-cover object-center"
             />
@@ -333,40 +416,52 @@ export function IntroExperience({
           <div
             data-intro="craft-light-sweep"
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 -inset-x-1/3 bg-[linear-gradient(108deg,transparent_28%,rgba(182,154,106,0.28)_48%,rgba(237,228,216,0.18)_52%,transparent_72%)] mix-blend-screen will-change-transform"
+            className="pointer-events-none absolute inset-y-0 -inset-x-1/3 bg-[linear-gradient(108deg,transparent_28%,rgba(182,154,106,0.32)_48%,rgba(237,228,216,0.2)_52%,transparent_72%)] mix-blend-screen will-change-transform"
           />
           <div aria-hidden="true" className="noir-vignette absolute inset-0" />
         </div>
 
         {/* ===============================================================
-            LAYER 03: CENTER WARM OPTICAL LIGHT BLOOM (Timeline 01)
+            SCENE 01 CENTER NARROW WARM LIGHT APERTURE
            =============================================================== */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 flex items-center justify-center"
         >
           <div
-            data-intro="center-bloom"
-            className="noir-center-bloom h-[58vw] max-h-[540px] min-h-[260px] w-[58vw] max-w-[540px] min-w-[260px] rounded-full will-change-transform"
+            data-intro="center-slit"
+            className="noir-center-slit h-[44svh] min-h-[220px] max-h-[420px] w-[26vw] min-w-[140px] max-w-[280px] will-change-transform"
           />
           <div
-            data-intro="center-core"
-            className="absolute h-2 w-2 rounded-full bg-[#EDE4D8] shadow-[0_0_28px_8px_rgba(182,154,106,0.45)] will-change-transform"
+            data-intro="center-bloom"
+            className="noir-center-bloom absolute h-[52vw] max-h-[500px] min-h-[240px] w-[52vw] max-w-[500px] min-w-[240px] rounded-full will-change-transform"
           />
         </div>
 
         {/* ===============================================================
-            LAYER 04: THE NOIR® WORDMARK & BRAND SIGNATURE (Timeline 04)
-            Exact visual center, clipped letter mask reveal, zero bounce/spin
+            SCENE 04: DEEP BURGUNDY ENVIRONMENT + BACKLIT NOIR® WORDMARK
            =============================================================== */}
+        <div
+          data-intro="burgundy-stage"
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(ellipse_78%_70%_at_50%_50%,rgba(100,31,43,0.52)_0%,rgba(53,21,29,0.78)_48%,rgba(21,17,18,0.96)_100%)]"
+        />
+
         <div
           data-intro="wordmark-group"
           className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center will-change-transform"
         >
+          {/* Backlight halo revealing the letters from behind */}
+          <div
+            data-intro="wordmark-backlight"
+            aria-hidden="true"
+            className="noir-wordmark-backlight absolute h-[42svh] max-h-[380px] w-[82vw] max-w-[780px] will-change-transform"
+          />
+
           <div className="relative inline-flex items-start justify-center">
             <h1
               aria-label="NOIR"
-              className="font-editorial flex items-baseline font-light text-[#EDE4D8] drop-shadow-[0_10px_28px_rgba(21,17,18,0.8)] tracking-[0.26em] sm:tracking-[0.32em] lg:tracking-[0.36em] text-[3.5rem] sm:text-[5rem] md:text-[6.25rem] lg:text-[7.5rem] xl:text-[8.5rem] leading-none"
+              className="font-editorial relative flex items-baseline font-light text-[#EDE4D8] tracking-[0.28em] sm:tracking-[0.34em] lg:tracking-[0.38em] text-[3.5rem] sm:text-[5.25rem] md:text-[6.5rem] lg:text-[7.75rem] xl:text-[8.75rem] leading-none"
             >
               {WORDMARK_LETTERS.map((letter, idx) => (
                 <span
@@ -381,7 +476,24 @@ export function IntroExperience({
                   </span>
                 </span>
               ))}
+
+              {/* Subtle antique-gold reflection sweep strictly aligned to NOIR lettering */}
+              <span
+                data-intro="wordmark-sheen"
+                aria-hidden="true"
+                className="noir-gold-sheen-text pointer-events-none absolute inset-0 flex items-baseline"
+              >
+                {WORDMARK_LETTERS.map((letter, idx) => (
+                  <span
+                    key={`sheen-${letter}-${idx}`}
+                    className="inline-block overflow-hidden py-1"
+                  >
+                    <span className="inline-block">{letter}</span>
+                  </span>
+                ))}
+              </span>
             </h1>
+
             <span
               data-intro="wordmark-reg"
               aria-hidden="true"
@@ -400,7 +512,7 @@ export function IntroExperience({
           <div className="overflow-hidden">
             <p
               data-intro="descriptor"
-              className="font-sans-noir text-[11px] sm:text-xs md:text-[13px] font-normal uppercase tracking-[0.34em] sm:tracking-[0.42em] text-[#EDE4D8]/90 will-change-transform"
+              className="font-sans-noir text-[11px] sm:text-xs md:text-[13px] font-normal uppercase tracking-[0.38em] sm:tracking-[0.46em] text-[#EDE4D8]/90 will-change-transform"
             >
               ATELIER OF MODERN INDIA
             </p>
@@ -417,41 +529,41 @@ export function IntroExperience({
         </div>
 
         {/* ===============================================================
-            LAYER 05: BURGUNDY SILK SWEEP VEIL (Timeline 05)
-            Glides smoothly across the viewport before dissolving into Entry Hero
+            SCENE 05: CENTER-EXPANDING BURGUNDY SILK FULL-SCREEN VEIL
+            Expands outward from center and dissolves into live Entry Hero film
            =============================================================== */}
         <div
           data-intro="transition-silk"
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-30 h-full w-full bg-[#35151D] will-change-transform"
         >
-          {!transitionVideoFailed && !prefersReducedMotion ? (
+          {!transitionSilkFailed && !prefersReducedMotion ? (
             <video
-              ref={transitionVideoRef}
-              key={`transition-${activeTransitionVideo}`}
-              src={activeTransitionVideo}
-              poster={activeTransitionPoster}
+              ref={transitionSilkRef}
+              key={`veil-${transitionVeilVideo}`}
+              src={transitionVeilVideo}
+              poster={transitionVeilPoster}
               muted
               loop
               playsInline
               preload="none"
-              onError={() => setTransitionVideoFailed(true)}
-              className="h-full w-full object-cover object-center opacity-88"
+              onError={() => setTransitionSilkFailed(true)}
+              className="h-full w-full object-cover object-center opacity-92"
             />
           ) : (
             <img
-              src={activeTransitionPoster}
+              src={transitionVeilPoster}
               alt=""
               referrerPolicy="no-referrer"
-              className="h-full w-full object-cover object-center opacity-88"
+              className="h-full w-full object-cover object-center opacity-92"
             />
           )}
-          <div className="absolute inset-0 bg-[#641F2B]/32 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-[#641F2B]/26 mix-blend-multiply" />
           <div className="noir-vignette absolute inset-0" />
         </div>
 
         {/* ===============================================================
-            LAYER 06: SUBTLE LIGHTWEIGHT FILM GRAIN
+            LIGHTWEIGHT FILM GRAIN OVERLAY
            =============================================================== */}
         {!prefersReducedMotion && (
           <div
@@ -462,15 +574,38 @@ export function IntroExperience({
         )}
 
         {/* ===============================================================
-            SKIP INTRO CONTROL — Top Right, Minimal Uppercase Manrope
+            TOP-RIGHT MINIMAL CONTROLS: OPTIONAL SOUND + SKIP INTRO
            =============================================================== */}
-        <div className="absolute top-6 right-5 sm:top-8 sm:right-8 lg:top-10 lg:right-12 z-50">
+        <div
+          data-intro="controls"
+          className="absolute top-6 right-5 sm:top-8 sm:right-8 lg:top-10 lg:right-12 z-50 flex items-center gap-4 sm:gap-6"
+        >
+          {!prefersReducedMotion && (
+            <button
+              type="button"
+              onClick={handleToggleSound}
+              aria-pressed={soundEnabled}
+              aria-label={soundEnabled ? 'Mute ambient sound' : 'Enable subtle ambient sound'}
+              className="font-sans-noir inline-flex min-h-[44px] items-center gap-2 px-2 py-2 text-[11px] sm:text-xs font-normal uppercase tracking-[0.24em] text-[#EDE4D8]/68 transition-colors duration-200 hover:text-[#B69A6A] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#B69A6A] whitespace-nowrap cursor-pointer"
+            >
+              {soundEnabled ? (
+                <Volume2 className="h-3.5 w-3.5 text-[#B69A6A]" />
+              ) : (
+                <VolumeX className="h-3.5 w-3.5" />
+              )}
+              <span className="hidden sm:inline">{soundEnabled ? 'SOUND ON' : 'SOUND'}</span>
+            </button>
+          )}
+
+          {!prefersReducedMotion && (
+            <span aria-hidden="true" className="h-3 w-px bg-[#EDE4D8]/20" />
+          )}
+
           <button
             type="button"
-            data-intro="skip-btn"
             onClick={handleSkip}
             aria-label="Skip brand introduction"
-            className="font-sans-noir group inline-flex min-h-[44px] items-center gap-2.5 px-3 py-2 text-[11px] sm:text-xs font-medium uppercase tracking-[0.26em] text-[#EDE4D8]/78 transition-colors duration-200 hover:text-[#EDE4D8] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#B69A6A] whitespace-nowrap cursor-pointer"
+            className="font-sans-noir group inline-flex min-h-[44px] items-center gap-2.5 px-2 py-2 text-[11px] sm:text-xs font-medium uppercase tracking-[0.26em] text-[#EDE4D8]/80 transition-colors duration-200 hover:text-[#EDE4D8] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#B69A6A] whitespace-nowrap cursor-pointer"
           >
             <span>SKIP INTRO</span>
             <span

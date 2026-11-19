@@ -244,18 +244,18 @@ export default function App() {
               <figure className="border border-[#EDE4D8]/10 bg-[#1A1416] overflow-hidden">
                 <div className="aspect-video overflow-hidden">
                   <img
-                    src={NOIR_INTRO_MEDIA.sareePullPoster}
-                    alt="Man in obsidian bandhgala pulling deep red-burgundy Banarasi silk saree"
+                    src={NOIR_INTRO_MEDIA.floatingSareePoster}
+                    alt="Deep red-burgundy Banarasi silk saree floating weightlessly in a sandstone hall"
                     referrerPolicy="no-referrer"
                     className="h-full w-full object-cover"
                   />
                 </div>
                 <figcaption className="p-5">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-[#B69A6A]">
-                    01 · The Pull
+                    01 · Floating Silk
                   </p>
                   <p className="mt-1.5 text-sm font-light text-[#EDE4D8]/75">
-                    Obsidian raw silk tailoring drawing six yards of red-burgundy Banarasi silk across darkness.
+                    Six yards of hand-dyed red-burgundy Banarasi silk drifting weightlessly through golden dusk light.
                   </p>
                 </figcaption>
               </figure>
@@ -263,18 +263,18 @@ export default function App() {
               <figure className="border border-[#EDE4D8]/10 bg-[#1A1416] overflow-hidden">
                 <div className="aspect-video overflow-hidden">
                   <img
-                    src={NOIR_INTRO_MEDIA.womanRotatePoster}
-                    alt="Woman wearing deep red-burgundy silk saree turning gracefully in slow motion"
+                    src={NOIR_INTRO_MEDIA.womanWalkingCatchPoster}
+                    alt="Woman in obsidian silk walking forward to catch the floating red-burgundy saree"
                     referrerPolicy="no-referrer"
                     className="h-full w-full object-cover"
                   />
                 </div>
                 <figcaption className="p-5">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-[#B69A6A]">
-                    02 · The Turn
+                    02 · The Reach
                   </p>
                   <p className="mt-1.5 text-sm font-light text-[#EDE4D8]/75">
-                    A fluid slow-motion rotation catching antique gold zari in warm chiaroscuro light.
+                    Moving smoothly through obsidian shadows, reaching out to catch the drifting antique-gold pallu.
                   </p>
                 </figcaption>
               </figure>
@@ -282,18 +282,18 @@ export default function App() {
               <figure className="border border-[#EDE4D8]/10 bg-[#1A1416] overflow-hidden">
                 <div className="aspect-video overflow-hidden">
                   <img
-                    src={NOIR_INTRO_MEDIA.heroDesktopPoster}
-                    alt="NOIR sandstone colonnade couture arrival"
+                    src={NOIR_INTRO_MEDIA.sareeCatchWrapPoster}
+                    alt="Woman embraced by the caught red-burgundy Banarasi silk saree"
                     referrerPolicy="no-referrer"
                     className="h-full w-full object-cover"
                   />
                 </div>
                 <figcaption className="p-5">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-[#B69A6A]">
-                    03 · The Arrival
+                    03 · The Embrace
                   </p>
                   <p className="mt-1.5 text-sm font-light text-[#EDE4D8]/75">
-                    The draped crimson-burgundy pallu resting between heritage tailoring and modern silhouette.
+                    Caught in motion, the crimson-burgundy silk wraps effortlessly around her as NOIR® awakens.
                   </p>
                 </figcaption>
               </figure>
