@@ -1,4 +1,8 @@
 export interface IntroMediaConfig {
+  sareePullVideo: string;
+  sareePullPoster: string;
+  womanRotateVideo: string;
+  womanRotatePoster: string;
   silkLandscapeVideo: string;
   silkLandscapePoster: string;
   silkPortraitVideo: string;
@@ -12,6 +16,10 @@ export interface IntroMediaConfig {
 }
 
 export const NOIR_INTRO_MEDIA: IntroMediaConfig = {
+  sareePullVideo: '/media/entry-saree-pull.mp4',
+  sareePullPoster: '/media/entry-saree-pull-poster.jpg',
+  womanRotateVideo: '/media/entry-woman-rotate.mp4',
+  womanRotatePoster: '/media/entry-woman-rotate-poster.jpg',
   silkLandscapeVideo: '/media/silk-landscape.mp4',
   silkLandscapePoster: '/media/silk-landscape-poster.jpg',
   silkPortraitVideo: '/media/silk-portrait.mp4',
@@ -55,14 +63,14 @@ export const NOIR_COLLECTION_PIECES: CouturePiece[] = [
     id: 'drape-02',
     code: 'Look 02',
     category: 'Womenswear',
-    title: 'Deep Wine Banarasi Draped Gown',
+    title: 'Deep Wine Banarasi Draped Saree',
     subtitle: 'Handwoven kadwa brocade silk sculpted into a single fluid silhouette',
     fabric: 'Handloom Katan Silk · Real Tested Antique Zari',
     craftHours: '260 Loom & Draping Hours',
     priceInr: '₹2,40,000',
     image: '/src/assets/images/noir_collection_womenswear_1795090808851.jpg',
     description:
-      'Woven on traditional pit looms in Varanasi in our custom deep burgundy dye bath, then hand-pleated in our Mumbai atelier for effortless movement.',
+      'Woven on traditional pit looms in Varanasi in our custom deep red-burgundy dye bath, then hand-finished in our Mumbai atelier for effortless movement.',
   },
   {
     id: 'sherwani-03',

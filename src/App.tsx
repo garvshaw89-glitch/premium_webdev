@@ -244,18 +244,18 @@ export default function App() {
               <figure className="border border-[#EDE4D8]/10 bg-[#1A1416] overflow-hidden">
                 <div className="aspect-video overflow-hidden">
                   <img
-                    src={NOIR_INTRO_MEDIA.silkLandscapePoster}
-                    alt="Deep burgundy Banarasi silk study"
+                    src={NOIR_INTRO_MEDIA.sareePullPoster}
+                    alt="Man in obsidian bandhgala pulling deep red-burgundy Banarasi silk saree"
                     referrerPolicy="no-referrer"
                     className="h-full w-full object-cover"
                   />
                 </div>
                 <figcaption className="p-5">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-[#B69A6A]">
-                    01 · The Fabric
+                    01 · The Pull
                   </p>
                   <p className="mt-1.5 text-sm font-light text-[#EDE4D8]/75">
-                    Hand-dyed deep burgundy Banarasi silk emerging from obsidian light.
+                    Obsidian raw silk tailoring drawing six yards of red-burgundy Banarasi silk across darkness.
                   </p>
                 </figcaption>
               </figure>
@@ -263,18 +263,18 @@ export default function App() {
               <figure className="border border-[#EDE4D8]/10 bg-[#1A1416] overflow-hidden">
                 <div className="aspect-video overflow-hidden">
                   <img
-                    src={NOIR_INTRO_MEDIA.craftsmanshipPoster}
-                    alt="Macro antique gold zardozi embroidery"
+                    src={NOIR_INTRO_MEDIA.womanRotatePoster}
+                    alt="Woman wearing deep red-burgundy silk saree turning gracefully in slow motion"
                     referrerPolicy="no-referrer"
                     className="h-full w-full object-cover"
                   />
                 </div>
                 <figcaption className="p-5">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-[#B69A6A]">
-                    02 · The Craftsmanship
+                    02 · The Turn
                   </p>
                   <p className="mt-1.5 text-sm font-light text-[#EDE4D8]/75">
-                    Low-key directional light traversing hand-laid antique gold zardozi.
+                    A fluid slow-motion rotation catching antique gold zari in warm chiaroscuro light.
                   </p>
                 </figcaption>
               </figure>
@@ -283,17 +283,17 @@ export default function App() {
                 <div className="aspect-video overflow-hidden">
                   <img
                     src={NOIR_INTRO_MEDIA.heroDesktopPoster}
-                    alt="NOIR sandstone colonnade couture campaign"
+                    alt="NOIR sandstone colonnade couture arrival"
                     referrerPolicy="no-referrer"
                     className="h-full w-full object-cover"
                   />
                 </div>
                 <figcaption className="p-5">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-[#B69A6A]">
-                    03 · The Campaign
+                    03 · The Arrival
                   </p>
                   <p className="mt-1.5 text-sm font-light text-[#EDE4D8]/75">
-                    Menswear bandhgala and draped katan silk shot at dusk in sandstone arches.
+                    The draped crimson-burgundy pallu resting between heritage tailoring and modern silhouette.
                   </p>
                 </figcaption>
               </figure>
