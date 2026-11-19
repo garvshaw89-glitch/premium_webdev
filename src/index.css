@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+:root {
+  --noir-black: #151112;
+  --noir-burgundy: #641F2B;
+  --noir-deep-wine: #35151D;
+  --noir-gold: #B69A6A;
+  --noir-ivory: #EDE4D8;
+}
+
+@layer base {
+  html {
+    background-color: var(--noir-black);
+    color: var(--noir-ivory);
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--noir-black);
+    color: var(--noir-ivory);
+    min-height: 100svh;
+    overflow-x: clip;
+    margin: 0;
+  }
+
+  ::selection {
+    background-color: var(--noir-burgundy);
+    color: var(--noir-ivory);
+  }
+}
+
+.font-editorial {
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}
+
+.font-sans-noir {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Lightweight SVG fractal noise film grain — compositor only, zero heavy runtime canvas overhead */
+.noir-film-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* Subtle warm optical bloom strictly for Timeline 01 center light */
+.noir-center-bloom {
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(237, 228, 216, 0.42) 0%,
+    rgba(182, 154, 106, 0.24) 18%,
+    rgba(100, 31, 43, 0.14) 44%,
+    rgba(21, 17, 18, 0) 72%
+  );
+  pointer-events: none;
+}
+
+.noir-directional-light {
+  background: radial-gradient(
+    ellipse 72% 58% at 24% 28%,
+    rgba(182, 154, 106, 0.22) 0%,
+    rgba(100, 31, 43, 0.14) 42%,
+    rgba(21, 17, 18, 0.58) 100%
+  );
+  pointer-events: none;
+}
+
+.noir-vignette {
+  background: radial-gradient(
+    ellipse 80% 75% at 50% 50%,
+    rgba(21, 17, 18, 0) 32%,
+    rgba(21, 17, 18, 0.52) 74%,
+    rgba(21, 17, 18, 0.92) 100%
+  );
+  pointer-events: none;
+}
+
+/* Lock scroll cleanly while full-screen intro occupies viewport */
+.noir-intro-lock {
+  overflow: hidden !important;
+  height: 100svh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
